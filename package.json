@@ -4,7 +4,15 @@
   "description": "A template for Discord.JS, using TypeScript",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "lint": "eslint **/*.ts",
+      "format": "prettier --write \"**/*.+(js|json|ts)\"",
+      "check": "npm run format && npm run lint",
+      "start": "node ./dist/src/index.js",
+      "start-dev": "node -r ./register.js src/index.ts",
+      "dev": "nodemon",
+      "tsc": "tsc",
+      "build": "npm run tsc",
+      "test": "cross-env NODE_ENV=test mocha -r ./register.js 'src/**/*.spec.ts' --exit"
   },
   "author": "ImperialWater",
   "license": "ISC",
@@ -23,5 +31,8 @@
     "prettier": "^1.19.1",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0"
   }
 }
