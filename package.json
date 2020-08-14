@@ -17,6 +17,7 @@
     "author": "ImperialWater",
     "license": "ISC",
     "devDependencies": {
+        "@types/node": "^14.0.27",
         "@typescript-eslint/eslint-plugin": "^2.12.0",
         "@typescript-eslint/parser": "^2.12.0",
         "eslint": "^6.7.2",
@@ -33,6 +34,9 @@
         "typescript": "^3.7.3"
     },
     "dependencies": {
+        "@enitoni/gears": "^4.0.2",
+        "@enitoni/gears-discordjs": "^3.0.1",
+        "discord.js": "^12.2.0",
         "dotenv": "^8.2.0"
     }
 }
