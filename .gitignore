@@ -68,3 +68,6 @@ dist/
 
 # IntelliJ files
 .idea
+
+# VIM files
+*.swp
