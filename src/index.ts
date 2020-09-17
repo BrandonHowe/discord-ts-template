@@ -1,39 +1,170 @@
 import * as ts from "typescript";
+import {
+    ClassNode,
+    ConstructorNode,
+    FunctionArgument,
+    FunctionNode,
+    GetterNode,
+    isConstructorNode,
+    isGetterNode,
+    isMethodNode,
+    isPropertyNode,
+    isSetterNode,
+    MethodNode,
+    PropertyNode,
+    SetterNode,
+    TypeNode,
+    VariableNode
+} from "./types";
 
-const filename = "test.ts";
+const filename = "./src/test.ts";
 const program = ts.createProgram([filename], {});
 const sourceFile = program.getSourceFile(filename)!;
 const typeChecker = program.getTypeChecker();
 
-function recursivelyPrintVariableDeclarations(
-    node: ts.Node, sourceFile: ts.SourceFile
-) {
+type TSClassProperty =
+    | ts.PropertyDeclaration
+    | ts.ConstructorDeclaration
+    | ts.GetAccessorDeclaration
+    | ts.SetAccessorDeclaration
+    | ts.MethodDeclaration;
+
+const displayClassProperty = (
+    node: TSClassProperty
+): ClassNode[keyof Omit<ClassNode, "name" | "text">] => {
+    if (ts.isConstructorDeclaration(node)) {
+        const params = node.parameters.map(l => {
+            const type = typeChecker.getTypeAtLocation(l);
+            const typeName = typeChecker.typeToString(type, l);
+            return {
+                name: "Argument",
+                text: node.name ? node.name.getText(sourceFile) : "anonymous",
+                type: typeName
+            } as FunctionArgument;
+        });
+        return {
+            name: "Constructor",
+            arguments: params
+        } as ConstructorNode;
+    }
+    if (ts.isPropertyDeclaration(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "Property",
+                text: node.name.getText(sourceFile),
+                type: typeName
+            }
+        ] as PropertyNode[];
+    }
+    if (ts.isGetAccessor(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "Getter",
+                text: node.name.getText(sourceFile),
+                type: typeName
+            }
+        ] as GetterNode[];
+    }
+    if (ts.isSetAccessor(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "Setter",
+                text: node.name.getText(sourceFile),
+                type: typeName
+            }
+        ] as SetterNode[];
+    }
+    if (ts.isMethodDeclaration(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "Method",
+                text: node.name.getText(sourceFile),
+                type: typeName
+            }
+        ] as MethodNode[];
+    }
+    return [];
+};
+
+const recursivelyPrintVariableDeclarations = (
+    node: ts.Node,
+    sourceFile: ts.SourceFile
+): TypeNode[] => {
     if (ts.isVariableDeclaration(node)) {
         const type = typeChecker.getTypeAtLocation(node);
         const typeName = typeChecker.typeToString(type, node);
 
-        console.log(`${node.name.getText(sourceFile)}: ${typeName}`);
+        return [
+            {
+                name: "Variable",
+                text: node.name.getText(sourceFile),
+                type: typeName
+            }
+        ] as VariableNode[];
     }
 
     if (ts.isFunctionDeclaration(node)) {
         const type = typeChecker.getTypeAtLocation(node);
         const typeName = typeChecker.typeToString(type, node);
 
-        console.log(`${node.name!.getText(sourceFile)}: ${typeName}`);
+        return [
+            {
+                name: "Function",
+                text: node.name ? node.name.getText(sourceFile) : "anonymous",
+                type: typeName
+            }
+        ] as FunctionNode[];
     }
 
     if (ts.isClassDeclaration(node)) {
         const type = typeChecker.getTypeAtLocation(node);
         const typeName = typeChecker.typeToString(type, node);
-        node.forEachChild(l => console.log(ts.isConstructorDeclaration(l)));
-        node.forEachChild(l => console.log(ts.SyntaxKind[l.kind]));
-
         console.log(`${node.name!.getText(sourceFile)}: ${typeName}`);
+        const properties = [] as (
+            | ConstructorNode
+            | GetterNode
+            | SetterNode
+            | MethodNode
+            | PropertyNode
+        )[];
+        node.forEachChild(l => {
+            const displayed = displayClassProperty(l as TSClassProperty);
+            if (Array.isArray(displayed)) {
+                properties.push(...displayed);
+            } else {
+                properties.push(displayed);
+            }
+        });
+        return [
+            {
+                name: "Class",
+                text: node.name ? node.name.getText(sourceFile) : "anonymous",
+                methods: properties.filter(isMethodNode),
+                setters: properties.filter(isSetterNode),
+                getters: properties.filter(isGetterNode),
+                properties: properties.filter(isPropertyNode),
+                constructor: properties.find(isConstructorNode)!
+            }
+        ] as ClassNode[];
     }
 
-    node.forEachChild(child =>
-        recursivelyPrintVariableDeclarations(child, sourceFile)
-    );
-}
+    const children = [] as TypeNode[];
 
-recursivelyPrintVariableDeclarations(sourceFile, sourceFile);
+    node.forEachChild(child => {
+        children.push(
+            ...recursivelyPrintVariableDeclarations(child, sourceFile)
+        );
+    });
+
+    return children;
+};
+
+console.log(recursivelyPrintVariableDeclarations(sourceFile, sourceFile));

@@ -10,7 +10,7 @@ function goo(asdf: boolean) {
 
 class mclass {
     test = 5;
-    constructor(blah: string) {}
+    constructor() {}
     get getTest() {
         return this.test;
     }

@@ -48,8 +48,7 @@ describe("Type parsing", () => {
         ]);
     });
     it("Parses function types", () => {
-        const text =
-            "function blah(arg1: <T>(v: T) => string): number => {}";
+        const text = "function blah(arg1: <T>(v: T) => string): number => {}";
         expect(parseString(text)).to.deep.equal([
             "Function: (<T>(T) => StringKeyword) => NumberKeyword"
         ]);
