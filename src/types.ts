@@ -59,6 +59,18 @@ export interface ConstructorNode extends TypeNode {
     arguments: FunctionArgument[];
 }
 
+export interface TypeAliasNode extends TypeNode {
+    name: "TypeAlias";
+    text: string;
+    type: string;
+}
+
+export interface InterfaceNode extends TypeNode {
+    name: "Interface";
+    text: string;
+    type: string;
+}
+
 export const isMethodNode = (node: TypeNode): node is MethodNode =>
     node.name === "Method";
 export const isGetterNode = (node: TypeNode): node is GetterNode =>

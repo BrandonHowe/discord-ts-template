@@ -24,3 +24,9 @@ class mclass {
         console.log("blah");
     }
 }
+
+type blah = string | number;
+
+interface bloo {
+    gangerBangers: blah;
+}

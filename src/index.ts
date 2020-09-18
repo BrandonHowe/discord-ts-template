@@ -5,6 +5,7 @@ import {
     FunctionArgument,
     FunctionNode,
     GetterNode,
+    InterfaceNode,
     isConstructorNode,
     isGetterNode,
     isMethodNode,
@@ -13,6 +14,7 @@ import {
     MethodNode,
     PropertyNode,
     SetterNode,
+    TypeAliasNode,
     TypeNode,
     VariableNode
 } from "./types";
@@ -127,7 +129,6 @@ const recursivelyPrintVariableDeclarations = (
     if (ts.isClassDeclaration(node)) {
         const type = typeChecker.getTypeAtLocation(node);
         const typeName = typeChecker.typeToString(type, node);
-        console.log(`${node.name!.getText(sourceFile)}: ${typeName}`);
         const properties = [] as (
             | ConstructorNode
             | GetterNode
@@ -154,6 +155,30 @@ const recursivelyPrintVariableDeclarations = (
                 constructor: properties.find(isConstructorNode)!
             }
         ] as ClassNode[];
+    }
+
+    if (ts.isTypeAliasDeclaration(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "TypeAlias",
+                text: node.name.text,
+                type: typeName
+            }
+        ] as TypeAliasNode[];
+    }
+
+    if (ts.isInterfaceDeclaration(node)) {
+        const type = typeChecker.getTypeAtLocation(node);
+        const typeName = typeChecker.typeToString(type, node);
+        return [
+            {
+                name: "Interface",
+                text: node.name.text,
+                type: typeName
+            }
+        ] as InterfaceNode[];
     }
 
     const children = [] as TypeNode[];
